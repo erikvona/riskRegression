@@ -777,7 +777,7 @@ predict.survfit <- function(object,newdata,times,bytimes=TRUE,type="cuminc",fill
             npat <- nrow(newdata)
         else stop("If argument `newdata' is supplied it must be a dataframe." )
     ntimes <- length(times)
-    sfit <- summary(object,times=times)
+    sfit <- summary(object,times=times, extend = TRUE)
     if (is.na(fill))
         Fill <- function(x,len){x[1:len]}
     else if (fill=="last")
@@ -799,7 +799,11 @@ predict.survfit <- function(object,newdata,times,bytimes=TRUE,type="cuminc",fill
             stop("Not all strata defining variables occur in newdata.")
         ## FIXME there are different ways to build strata levels
         ## how can we test which one was used???
-        stratdat <- newdata[,covars,drop=FALSE]
+        if("data.table" %in% class(newdata)){
+            stratdat <- newdata[,..covars,drop=FALSE] #Double dot required for external vectors
+        }else{
+            stratdat <- newdata[,covars,drop=FALSE]
+        }
         names(stratdat) <- covars
         NewStratVerb <- survival::strata(stratdat)
         NewStrat <- interaction(stratdat,sep=" ")
